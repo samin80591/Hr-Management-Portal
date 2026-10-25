@@ -1,0 +1,288 @@
+npm create vite@latest hr-frontend -- --template react
+cd hr-frontend
+npm install
+npm run de```jsx
+import { useEffect, useState } from "react";
+import "./App.css";
+
+const API_URL = "http://127.0.0.1:5000/api";
+
+function App() {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  async function loadEmployees() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${API_URL}/employees`);
+
+      if (!response.ok) {
+        throw new Error("Unable to retrieve employee records.");
+      }
+
+      const data = await response.json();
+      setEmployees(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const filteredEmployees = employees.filter((employee) =>
+    [
+      employee.name,
+      employee.email,
+      employee.department,
+      employee.designation,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="app-container">
+      <header className="header">
+        <div>
+          <h1>PeopleHub</h1>
+          <p>Human Resource Management Portal</p>
+        </div>
+
+        <span className="badge">HR Management</span>
+      </header>
+
+      <section className="dashboard">
+        <div className="dashboard-card">
+          <h3>Total Employees</h3>
+          <p className="count">
+            {loading ? "..." : employees.length}
+          </p>
+          <span>Registered employee records</span>
+        </div>
+      </section>
+
+      <section className="employee-section">
+        <div className="section-header">
+          <div>
+            <h2>Employee Directory</h2>
+            <p>View and search employee information.</p>
+          </div>
+
+          <button onClick={loadEmployees}>
+            Refresh
+          </button>
+        </div>
+
+        <input
+          className="search-input"
+          type="search"
+          placeholder="Search by name, email, or department..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+
+        {loading && <p>Loading employee records...</p>}
+
+        {error && <p className="error">{error}</p>}
+
+        {!loading && !error && (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Department</th>
+                  <th>Designation</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredEmployees.map((employee) => (
+                  <tr key={employee.id}>
+                    <td>{employee.name}</td>
+                    <td>{employee.email}</td>
+                    <td>{employee.department}</td>
+                    <td>{employee.designation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredEmployees.length === 0 && (
+              <p className="empty-message">
+                No matching employees found.
+              </p>
+            )}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default App;
+``````css
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  color: #26344a;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  margin-bottom: 8px;
+  color: #173b70;
+}
+
+.header p,
+.section-header p {
+  color: #77859a;
+  font-size: 14px;
+}
+
+.badge {
+  padding: 10px 15px;
+  background: #dfeaff;
+  color: #2455a4;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.dashboard-card,
+.employee-section {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(20, 40, 70, 0.06);
+}
+
+.dashboard-card {
+  max-width: 320px;
+}
+
+.count {
+  color: #2864c5;
+  font-size: 36px;
+  font-weight: bold;
+  margin: 15px 0;
+}
+
+.dashboard-card span {
+  color: #77859a;
+  font-size: 13px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin-bottom: 8px;
+}
+
+button {
+  border: none;
+  border-radius: 7px;
+  padding: 11px 18px;
+  background: #2864c5;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #194b9b;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #e7edf5;
+  font-size: 13px;
+}
+
+th {
+  background: #f7f9fc;
+  color: #52627a;
+}
+
+.error {
+  color: #bd3030;
+}
+
+.empty-message {
+  padding: 20px 0;
+  color: #77859a;
+}
+
+@media (max-width: 600px) {
+  .app-container {
+    padding: 15px;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-card {
+    max-width: none;
+  }
+}
+```v
